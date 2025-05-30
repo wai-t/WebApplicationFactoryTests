@@ -12,6 +12,10 @@
         {
             _client = client;
         }
+        //public MyService(IHttpClientBuilder clientBuilder)
+        //{
+        //    _client = clientBuilder.Build();
+        //}
         public async Task<string> GetDataAsync()
         {
             // Simulate some asynchronous operation

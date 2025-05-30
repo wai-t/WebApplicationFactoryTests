@@ -10,7 +10,7 @@ using System.Net;
 namespace Tests
 {
 
-    public class TestWebApplicationFactory : WebApplicationFactory<Program>
+    public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     {
         private Func<HttpRequestMessage, CancellationToken, HttpResponseMessage> _testBehaviour;
 
@@ -19,7 +19,7 @@ namespace Tests
         // This allows you to specify how the handler should respond to HTTP requests during tests.
         // Sometimes you might want to return the normal response, other times you might want to simulate an
         // exception or a HTTP error code.
-        public TestWebApplicationFactory(Func<HttpRequestMessage, CancellationToken, HttpResponseMessage> testBehaviour)
+        public CustomWebApplicationFactory(Func<HttpRequestMessage, CancellationToken, HttpResponseMessage> testBehaviour)
         {
             _testBehaviour = testBehaviour;
         }
@@ -52,6 +52,8 @@ namespace Tests
                     BaseAddress = new Uri("https://example.com/")
                 });
 
+                // I only need this in case some code used IHttpClientFactory to create HttpClients,
+                // instead of using the HttpClient directly
                 // Register a mocked HttpClientFactory
                 services.AddSingleton<IHttpClientFactory>(sp =>
                 {
@@ -67,14 +69,14 @@ namespace Tests
 
             });
         }
-    }
+            }
     public class GoodResponseTests
     {
-        private TestWebApplicationFactory _factory;
+        private CustomWebApplicationFactory _factory;
 
         public GoodResponseTests()
         {
-            _factory = new TestWebApplicationFactory((HttpRequestMessage _, CancellationToken _) => 
+            _factory = new CustomWebApplicationFactory((HttpRequestMessage _, CancellationToken _) => 
                         new HttpResponseMessage
                         {
                             StatusCode = HttpStatusCode.OK,
@@ -112,11 +114,11 @@ namespace Tests
 
     public class MockedApiTimesOut
     {
-        private TestWebApplicationFactory _factory;
+        private CustomWebApplicationFactory _factory;
 
         public MockedApiTimesOut()
         {
-            _factory = new TestWebApplicationFactory((HttpRequestMessage _, CancellationToken _) =>
+            _factory = new CustomWebApplicationFactory((HttpRequestMessage _, CancellationToken _) =>
             {
                 throw new TaskCanceledException("Mocked timeout exception");
             });
@@ -158,11 +160,11 @@ namespace Tests
 
     public class HttpErrorResponseTests
     {
-        private TestWebApplicationFactory _factory;
+        private CustomWebApplicationFactory _factory;
 
         public HttpErrorResponseTests()
         {
-            _factory = new TestWebApplicationFactory((HttpRequestMessage _, CancellationToken _) =>
+            _factory = new CustomWebApplicationFactory((HttpRequestMessage _, CancellationToken _) =>
                 new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.InternalServerError,
